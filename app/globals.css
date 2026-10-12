@@ -1,0 +1,31 @@
+:root { --navy:#0a2a5e; --blue:#1d5fd1; --bg:#eef4fc; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:#10213f; }
+header { background:var(--navy); color:#fff; padding:14px 20px; font-weight:700; letter-spacing:.5px; }
+main { max-width:440px; margin:24px auto; padding:0 16px; }
+.box { background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px #0a2a5e22; }
+label { display:block; font-size:14px; font-weight:600; margin:14px 0 4px; }
+input { width:100%; padding:12px; border:1px solid #b9c8e0; border-radius:10px; font-size:16px; }
+button { width:100%; margin-top:20px; padding:14px; border:0; border-radius:10px; background:var(--blue); color:#fff; font-size:16px; font-weight:700; }
+button:disabled { opacity:.6; }
+.err { color:#c0392b; margin-top:12px; font-size:14px; }
+.card { text-align:center; }
+.card img.photo { width:120px; height:120px; border-radius:16px; object-fit:cover; background:#dde6f5; }
+.card h2 { margin:12px 0 4px; }
+.badge { display:inline-block; padding:4px 16px; border-radius:99px; color:#fff; font-weight:700; margin:8px 0; }
+.active { background:#1e9e4f; } .expired { background:#e04545; } .revoked { background:#333; } .pending_payment { background:#f0a020; }
+.muted { color:#5b6b88; font-size:14px; margin:4px 0; }
+.big { font-size:22px; font-weight:800; margin:0 0 8px; }
+.row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:space-between; }
+.row input, .row select { flex:1; min-width:120px; }
+select { padding:12px; border:1px solid #b9c8e0; border-radius:10px; font-size:16px; background:#fff; }
+button.small { width:auto; margin:0; padding:8px 14px; font-size:14px; }
+.gray { background:#6b7a96; } .red { background:#d64545; }
+.btnlink { background:#fff; border:1px solid var(--blue); color:var(--blue); padding:8px 14px; border-radius:10px; font-weight:700; font-size:14px; text-decoration:none; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:16px; }
+.stats .box { display:flex; flex-direction:column; }
+.stats b { font-size:28px; color:var(--navy); } .stats span { font-size:13px; color:#5b6b88; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th, td { text-align:left; padding:8px 6px; border-bottom:1px solid #e1e9f5; white-space:nowrap; }
+.box .badge { font-size:12px; padding:2px 10px; }
+.wrap { max-width:960px; margin:24px auto; padding:0 16px; } .wrap > .box.card, .wrap > .box:not(:has(table)) { max-width:440px; margin-left:auto; margin-right:auto; }
