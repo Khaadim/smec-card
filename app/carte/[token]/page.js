@@ -12,7 +12,7 @@ export default async function CardPage({ params }) {
   const m = card.members;
   const status = computeStatus(card);
   const photo = await photoUrl(sb, m.photo_path);
-  const qr = await QRCode.toDataURL(`${process.env.NEXT_PUBLIC_SITE_URL}/verifier/${token}`, { width: 360, margin: 1 });
+  const qr = await QRCode.toDataURL(`${process.env.SITE_URL}/verifier/${token}`, { width: 360, margin: 1 });
 
   return (
     <div className="box card">
