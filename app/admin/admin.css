@@ -58,3 +58,23 @@
   .adm .me { border:0; padding:0; } .adm .out span { display:none; }
   .adm-main { padding:16px; } .adm .kv { grid-template-columns:1fr; }
 }
+
+/* ---- CRUD membres ---- */
+.adm .head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+.adm .btnlink.solid { background:#1d5fd1; color:#fff; }
+.adm .btnlink.sm { padding:6px 11px; font-size:13px; }
+.adm button.warn { background:#e08a00; }
+.adm .msg { padding:12px 14px; border-radius:10px; margin-bottom:16px; font-size:14px; font-weight:600; }
+.adm .msg.ok { background:#dff5e8; color:#176b38; } .adm .msg.err { background:#fde4e4; color:#a52a2a; }
+.adm .fgrid { display:flex; flex-direction:column; gap:14px; }
+.adm .fgrid label { display:flex; flex-direction:column; gap:5px; font-size:13px; font-weight:600; color:#33466b; }
+.adm .fgrid input, .adm .fgrid select { width:100%; font-weight:400; color:#10213f; }
+.adm .fgrid button { padding:12px; font-size:15px; }
+.adm .two-cols { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.adm .two { display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:start; }
+.adm .thumb { width:120px; height:120px; border-radius:16px; object-fit:cover; background:#dde6f5; }
+.adm .empty-thumb { display:grid; place-items:center; color:#5b6b88; font-size:12px; }
+.adm .danger-zone { border:1px solid #f3c2c2; }
+.adm .danger-zone h2 { color:#a52a2a; }
+.adm .act { flex-wrap:wrap; }
+@media (max-width:980px) { .adm .two { grid-template-columns:1fr; } }

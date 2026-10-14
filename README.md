@@ -1,10 +1,14 @@
-# SMEC – Carte de membre numérique (prototype)
+# SMEC – Carte de membre numérique
 
-1. Installer Node.js (version LTS) : https://nodejs.org
-2. Copier `.env.local.example` en `.env.local` et remplir les 4 valeurs
-3. Dans un terminal, dans ce dossier :  `npm install` puis `npm run dev`
-4. Ouvrir http://localhost:3000
+## Lancer en local
+1. Installer Node.js (LTS) : https://nodejs.org
+2. Copier `.env.local.example` en `.env.local` et remplir les valeurs
+3. `npm install` puis `npm run dev` → http://localhost:3000
 
-## Administration
-Adresse : http://localhost:3000/admin  (compte créé dans Supabase > Authentication, ajouté à la table admin_users)
-La session dure 1 heure, puis il faut se reconnecter.
+## Variables d'environnement (aussi à saisir dans Vercel)
+SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SITE_URL, PAYMENT_MODE
+
+## Administration : http://localhost:3000/admin
+Tableau de bord, Membres (créer, voir, modifier, supprimer, révoquer/réactiver, export),
+Paiements, Cartes, Paramètres. Téléchargement des cartes en PNG et PDF.
+La session dure 1 heure.

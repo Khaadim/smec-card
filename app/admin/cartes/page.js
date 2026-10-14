@@ -37,7 +37,7 @@ export default async function Cartes({ searchParams }) {
                     <span className={`pill ${c.st}`}>{STATUS_LABELS[c.st]}</span>
                     {c.revoked_reason && <small style={{ color: '#5b6b88' }}> · {c.revoked_reason}</small>}
                   </td>
-                  <td><a href={`/carte/${c.token}`} target="_blank">Carte</a> · <a href={`/verifier/${c.token}`} target="_blank">Vérification</a></td>
+                  <td><a href={`/carte/${c.token}`} target="_blank">Carte</a> · <a href={`/verifier/${c.token}`} target="_blank">Vérification</a>{c.card_number && <> · <a href={`/carte/${c.token}/png`}>PNG</a> · <a href={`/carte/${c.token}/pdf`}>PDF</a></>}</td>
                 </tr>
               ))}
               {list.length === 0 && <tr><td colSpan={6} className="empty">Aucune carte.</td></tr>}
