@@ -30,7 +30,7 @@ export default async function Parametres() {
         <h2>Paiement et site</h2>
         <dl className="kv">
           <dt>Mode de paiement</dt>
-          <dd>{simulation ? 'Simulation (paiement validé automatiquement – tests uniquement)' : 'Réel'}</dd>
+          <dd>{simulation ? 'Simulation (paiement validé automatiquement – tests uniquement)' : (process.env.PAYMENT_MODE || 'manual') === 'manual' ? 'Manuel : espèces, Wave, Orange Money (confirmé par un administrateur)' : 'Réel (agrégateur de paiement)'}</dd>
           <dt>Adresse du site</dt><dd>{site}</dd>
         </dl>
       </div>

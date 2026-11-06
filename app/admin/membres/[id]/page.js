@@ -2,12 +2,13 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { admin, photoUrl, computeStatus, STATUS_LABELS } from '@/lib/supabase';
 import { getAdmin } from '@/lib/auth';
-import { updateMember, deleteMember, changeCardStatus } from '../../actions';
+import { updateMember, deleteMember, changeCardStatus, confirmPayment } from '../../actions';
+import { METHOD_LABELS } from '@/lib/site';
 import ConfirmButton from '../../ConfirmButton';
 
 export const dynamic = 'force-dynamic';
 const OK = { created: 'Membre créé et carte activée.', updated: 'Modifications enregistrées.' };
-const PAY = { paid: 'Validé', pending: 'En attente', failed: 'Échoué' };
+const PAY = { paid: 'Validé', pending: 'En attente', failed: 'Refusé' };
 const fmt = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
 
 export default async function MembreDetail({ params, searchParams }) {
@@ -95,17 +96,18 @@ export default async function MembreDetail({ params, searchParams }) {
             <h2>Paiements</h2>
             <div className="tablewrap">
               <table>
-                <thead><tr><th>Date</th><th>Montant</th><th>Mode</th><th>Statut</th></tr></thead>
+                <thead><tr><th>Date</th><th>Montant</th><th>Mode</th><th>Statut</th><th>Action</th></tr></thead>
                 <tbody>
                   {pays.map((p) => (
                     <tr key={p.id}>
                       <td>{fmt(p.created_at)}</td>
                       <td>{p.amount.toLocaleString('fr-FR')} FCFA</td>
-                      <td>{p.method || '—'}</td>
+                      <td>{METHOD_LABELS[p.method] || p.method || '—'}</td>
                       <td><span className={`pill ${p.status}`}>{PAY[p.status]}</span></td>
+                      <td>{p.status === 'pending' ? <form action={confirmPayment}><input type="hidden" name="payment_id" value={p.id} /><button>Confirmer</button></form> : '—'}</td>
                     </tr>
                   ))}
-                  {pays.length === 0 && <tr><td colSpan={4} className="empty">Aucun paiement.</td></tr>}
+                  {pays.length === 0 && <tr><td colSpan={5} className="empty">Aucun paiement.</td></tr>}
                 </tbody>
               </table>
             </div>

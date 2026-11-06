@@ -24,6 +24,7 @@ export default async function VerifyPage({ params }) {
       <p className="muted">N° membre : {r.card_number || '—'}</p>
       <span className={`badge ${r.status}`}>{STATUS_LABELS[r.status]}</span>
       {r.expires_at && <p className="muted">Date d'expiration : {new Date(r.expires_at).toLocaleDateString('fr-FR')}</p>}
+      <p className="muted" style={{ fontSize: 12 }}>Vérification effectuée le {new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Africa/Dakar' })}</p>
     </div>
   );
 }

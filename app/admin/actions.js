@@ -20,7 +20,7 @@ export async function login(formData) {
   if (!a) redirect('/admin/login?e=2');
 
   (await cookies()).set('smec-admin', data.session.access_token, {
-    httpOnly: true, sameSite: 'lax', path: '/', maxAge: 3600, secure: process.env.NODE_ENV === 'production',
+    httpOnly: true, sameSite: 'lax', path: '/', maxAge: data.session.expires_in || 3600, secure: process.env.NODE_ENV === 'production',
   });
   redirect('/admin');
 }
@@ -28,6 +28,46 @@ export async function login(formData) {
 export async function logout() {
   (await cookies()).delete('smec-admin');
   redirect('/admin/login');
+}
+
+/* ---------------- Mot de passe oublié ---------------- */
+
+export async function requestReset(formData) {
+  const email = String(formData.get('email') || '').trim();
+  if (email) {
+    // On n'envoie le lien que pour un compte administrateur (et on ne révèle jamais s'il existe)
+    const { data: a } = await admin().from('admin_users').select('user_id').ilike('email', email.replace(/[%_]/g, '')).maybeSingle();
+    if (a) {
+      const anon = createClient(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+      const site = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+      await anon.auth.resetPasswordForEmail(email, { redirectTo: `${site}/admin/nouveau-mot-de-passe` });
+    }
+  }
+  redirect('/admin/mot-de-passe-oublie?sent=1');
+}
+
+export async function resetPassword(prev, formData) {
+  const token = String(formData.get('token') || '');
+  const pw = String(formData.get('password') || '');
+  const pw2 = String(formData.get('confirm') || '');
+  const expired = { error: 'Lien invalide ou expiré. Refaites une demande de réinitialisation.' };
+
+  if (!token) return expired;
+  if (pw.length < 10) return { error: 'Le mot de passe doit contenir au moins 10 caractères.' };
+  if (pw !== pw2) return { error: 'Les deux mots de passe ne correspondent pas.' };
+
+  const sb = admin();
+  const { data, error } = await sb.auth.getUser(token);
+  if (error || !data?.user) return expired;
+
+  const { data: a } = await sb.from('admin_users').select('user_id').eq('user_id', data.user.id).maybeSingle();
+  if (!a) return { error: "Ce compte n'a pas accès à l'administration." };
+
+  const { error: e2 } = await sb.auth.admin.updateUserById(data.user.id, { password: pw });
+  if (e2) return { error: 'Impossible de changer le mot de passe. Choisissez-en un différent de l’ancien.' };
+
+  await sb.from('audit_log').insert({ admin_id: data.user.id, action: 'reset_password', target_id: data.user.id });
+  redirect('/admin/login?ok=reset');
 }
 
 /* ---------------- Outils internes ---------------- */
@@ -176,6 +216,32 @@ export async function deleteMember(formData) {
 
   refresh();
   redirect('/admin/membres?ok=deleted');
+}
+
+/* ---------------- Confirmer / refuser un paiement ---------------- */
+
+export async function confirmPayment(formData) {
+  const me = await requireAdmin();
+  const sb = admin();
+  const id = String(formData.get('payment_id'));
+  const { data: p } = await sb.from('payments').select('*').eq('id', id).maybeSingle();
+  if (!p) return;
+
+  if (p.status !== 'paid') await sb.from('payments').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', id);
+  if (p.card_id) {
+    const { data: c } = await sb.from('cards').select('status').eq('id', p.card_id).maybeSingle();
+    if (c && c.status === 'pending_payment') await sb.rpc('activate_card', { p_card_id: p.card_id });
+  }
+  await sb.from('audit_log').insert({ admin_id: me.id, action: 'confirm_payment', target_id: id, details: { method: p.method, amount: p.amount } });
+  refresh();
+}
+
+export async function rejectPayment(formData) {
+  const me = await requireAdmin();
+  const id = String(formData.get('payment_id'));
+  await admin().from('payments').update({ status: 'failed' }).eq('id', id).eq('status', 'pending');
+  await admin().from('audit_log').insert({ admin_id: me.id, action: 'reject_payment', target_id: id });
+  refresh();
 }
 
 /* ---------------- Révoquer / réactiver une carte ---------------- */
