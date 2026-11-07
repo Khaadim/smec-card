@@ -47,26 +47,37 @@ export async function requestReset(formData) {
 }
 
 export async function resetPassword(prev, formData) {
-  const token = String(formData.get('token') || '');
+  const token = String(formData.get('token') || '');          // jeton reçu dans l'adresse (après le #)
+  const tokenHash = String(formData.get('token_hash') || ''); // jeton reçu dans l'adresse (?token_hash=)
   const pw = String(formData.get('password') || '');
   const pw2 = String(formData.get('confirm') || '');
   const expired = { error: 'Lien invalide ou expiré. Refaites une demande de réinitialisation.' };
 
-  if (!token) return expired;
+  if (!token && !tokenHash) return expired;
+  // Les vérifications du mot de passe viennent AVANT l'utilisation du jeton : une faute de frappe ne le "brûle" pas
   if (pw.length < 10) return { error: 'Le mot de passe doit contenir au moins 10 caractères.' };
   if (pw !== pw2) return { error: 'Les deux mots de passe ne correspondent pas.' };
 
   const sb = admin();
-  const { data, error } = await sb.auth.getUser(token);
-  if (error || !data?.user) return expired;
+  let user = null;
+  if (tokenHash) {
+    const anon = createClient(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+    const { data, error } = await anon.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash });
+    if (error || !data?.user) return expired;
+    user = data.user;
+  } else {
+    const { data, error } = await sb.auth.getUser(token);
+    if (error || !data?.user) return expired;
+    user = data.user;
+  }
 
-  const { data: a } = await sb.from('admin_users').select('user_id').eq('user_id', data.user.id).maybeSingle();
+  const { data: a } = await sb.from('admin_users').select('user_id').eq('user_id', user.id).maybeSingle();
   if (!a) return { error: "Ce compte n'a pas accès à l'administration." };
 
-  const { error: e2 } = await sb.auth.admin.updateUserById(data.user.id, { password: pw });
+  const { error: e2 } = await sb.auth.admin.updateUserById(user.id, { password: pw });
   if (e2) return { error: 'Impossible de changer le mot de passe. Choisissez-en un différent de l’ancien.' };
 
-  await sb.from('audit_log').insert({ admin_id: data.user.id, action: 'reset_password', target_id: data.user.id });
+  await sb.from('audit_log').insert({ admin_id: user.id, action: 'reset_password', target_id: user.id });
   redirect('/admin/login?ok=reset');
 }
 
