@@ -14,9 +14,8 @@ export default function NouveauMotDePasse() {
     const t = h.get('access_token');
     if (t && h.get('type') === 'recovery') {
       setToken(t);
-      window.history.replaceState(null, '', window.location.pathname);
     } else {
-      setProblem(h.get('error_description') ? 'Ce lien est invalide ou a expiré.' : 'Lien manquant ou invalide.');
+      setProblem(h.get('error_code') === 'otp_expired' || h.get('error_description') ? 'Ce lien a expiré ou a déjà été utilisé.' : 'Lien manquant ou invalide : ouvrez-le directement depuis l’e-mail.');
     }
   }, []);
 
