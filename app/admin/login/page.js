@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getAdmin } from '@/lib/auth';
 import { login } from '../actions';
-import PasswordInput from '../../../PasswordInput';
+import PasswordInput from '../../PasswordInput';
 
 export default async function LoginPage({ searchParams }) {
   if (await getAdmin()) redirect('/admin');
