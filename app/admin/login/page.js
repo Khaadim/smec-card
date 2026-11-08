@@ -15,7 +15,7 @@ export default async function LoginPage({ searchParams }) {
         <label>E-mail</label>
         <input name="email" type="email" required />
         <label>Mot de passe</label>
-        <input name="password" type="password" required />
+        <PasswordInput name="password" required autoComplete="current-password" />
         <button>Se connecter</button>
         {e === '1' && <p className="err">E-mail ou mot de passe incorrect.</p>}
         {e === '2' && <p className="err">Ce compte n'a pas accès à l'administration.</p>}
