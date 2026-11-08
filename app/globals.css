@@ -108,3 +108,8 @@ main { width:100%; flex:1 0 auto; }
 .brand-link { text-decoration:none; }
 .link-sm { display:block; text-align:center; margin-top:14px; font-size:14px; color:#1d5fd1; font-weight:600; text-decoration:none; }
 .ok { color:#176b38; background:#dff5e8; padding:10px 12px; border-radius:10px; font-size:14px; margin:0 0 12px; font-weight:600; }
+
+.pw { position:relative; }
+.pw input { padding-right:48px; }
+.pw .pw-eye { position:absolute; right:6px; top:50%; transform:translateY(-50%); width:auto; margin:0; padding:8px; background:transparent; color:#5b6b88; border:0; border-radius:8px; line-height:0; cursor:pointer; }
+.pw .pw-eye:hover { color:#0a2a5e; background:#eef4fc; }
