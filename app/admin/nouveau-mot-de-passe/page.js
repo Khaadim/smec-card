@@ -2,6 +2,7 @@
 import { useEffect, useState, useActionState } from 'react';
 import Link from 'next/link';
 import { resetPassword } from '../actions';
+import PasswordInput from '../PasswordInput';
 
 export default function NouveauMotDePasse() {
   const [token, setToken] = useState('');
@@ -35,9 +36,9 @@ export default function NouveauMotDePasse() {
           <input type="hidden" name="token" value={token} />
           <input type="hidden" name="token_hash" value={tokenHash} />
           <label>Nouveau mot de passe (10 caractères minimum)</label>
-          <input name="password" type="password" minLength={10} required autoComplete="new-password" />
+          <PasswordInput name="password" minLength={10} required autoComplete="new-password" />
           <label>Confirmer le mot de passe</label>
-          <input name="confirm" type="password" minLength={10} required autoComplete="new-password" />
+          <PasswordInput name="confirm" minLength={10} required autoComplete="new-password" />         
           <button disabled={pending}>{pending ? 'Enregistrement…' : 'Enregistrer'}</button>
           {state?.error && <p className="err">{state.error}</p>}
           {state?.error && <Link className="link-sm" href="/admin/mot-de-passe-oublie">Demander un nouveau lien</Link>}
