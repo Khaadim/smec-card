@@ -2,7 +2,7 @@
 import { useEffect, useState, useActionState } from 'react';
 import Link from 'next/link';
 import { resetPassword } from '../actions';
-import PasswordInput from '../../PasswordInput';
+import PasswordInput from '../../../PasswordInput';
 
 export default function NouveauMotDePasse() {
   const [token, setToken] = useState('');
