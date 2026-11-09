@@ -6,6 +6,7 @@ import Icon from './icons';
 import CopyButton from './CopyButton';
 import { markLinkSent } from './actions';
 import { waNumber } from '@/lib/phone';
+import { getSite } from '@/lib/settings';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +36,7 @@ export default async function Dashboard() {
     const { data: ms } = await sb.from('members').select('id, first_name, last_name, phone, cards(token)').in('id', pendingIds);
     linkRequests = ms || [];
   }
-  const siteUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  const siteUrl = (await getSite()).siteUrl;
 
   const rows = (cards || []).map((c) => ({ ...c, st: computeStatus(c) }));
   const count = (s) => rows.filter((r) => r.st === s).length;

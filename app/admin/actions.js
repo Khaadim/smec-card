@@ -1,10 +1,11 @@
 'use server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { admin } from '@/lib/supabase';
 import { getAdmin } from '@/lib/auth';
+import { getSite } from '@/lib/settings';
 
 /* ---------------- Connexion / déconnexion ---------------- */
 
@@ -39,7 +40,7 @@ export async function requestReset(formData) {
     const { data: a } = await admin().from('admin_users').select('user_id').ilike('email', email.replace(/[%_]/g, '')).maybeSingle();
     if (a) {
       const anon = createClient(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
-      const site = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+      const { siteUrl: site } = await getSite();
       await anon.auth.resetPasswordForEmail(email, { redirectTo: `${site}/admin/nouveau-mot-de-passe` });
     }
   }
@@ -260,6 +261,64 @@ export async function markLinkSent(formData) {
   const id = String(formData.get('member_id'));
   await admin().from('audit_log').insert({ admin_id: me.id, action: 'card_link_sent', target_id: id });
   refresh();
+}
+
+/* ---------------- Paramètres modifiables ---------------- */
+
+export async function saveSettings(formData) {
+  const me = await requireAdmin();
+  const BACK = '/admin/parametres';
+  const t = (k, max = 200) => String(formData.get(k) || '').trim().slice(0, max);
+
+  const price = parseInt(String(formData.get('price') || ''), 10);
+  if (!Number.isFinite(price) || price < 0 || price > 1000000) fail(BACK, 'Prix invalide (entre 0 et 1 000 000 FCFA).');
+
+  const email = t('email');
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail(BACK, 'E-mail invalide.');
+
+  const whatsapp = t('whatsapp', 30).replace(/\D/g, '');
+  if (whatsapp && (whatsapp.length < 9 || whatsapp.length > 15)) fail(BACK, 'Numéro WhatsApp invalide : chiffres avec indicatif, par exemple 221771234567.');
+
+  const links = {};
+  for (const k of ['instagram', 'facebook', 'linkedin']) {
+    const v = t(k, 300);
+    if (v && !/^https:\/\//i.test(v)) fail(BACK, `Le lien ${k} doit commencer par https://`);
+    links[k] = v;
+  }
+
+  const validityMode = String(formData.get('validityMode') || 'end_of_year') === 'months' ? 'months' : 'end_of_year';
+  const validityMonths = parseInt(String(formData.get('validityMonths') || '12'), 10);
+  if (validityMode === 'months' && !(validityMonths >= 1 && validityMonths <= 60)) fail(BACK, 'La durée de validité doit être comprise entre 1 et 60 mois.');
+
+  const cardPrefix = t('cardPrefix', 20).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (cardPrefix.length < 2 || cardPrefix.length > 10) fail(BACK, 'Le préfixe du numéro doit contenir 2 à 10 lettres ou chiffres (sans espace ni tiret).');
+  const cardDigits = parseInt(String(formData.get('cardDigits') || '4'), 10);
+  if (!(cardDigits >= 3 && cardDigits <= 8)) fail(BACK, 'Le nombre de chiffres du numéro doit être compris entre 3 et 8.');
+  const cardIncludeYear = formData.get('cardIncludeYear') === 'on';
+
+  let siteUrl = t('siteUrl', 200);
+  if (siteUrl) {
+    let u;
+    try { u = new URL(siteUrl); } catch { fail(BACK, "Adresse du site invalide : écrivez par exemple https://smec-card.vercel.app"); }
+    const local = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+    if (u.protocol !== 'https:' && !(local && u.protocol === 'http:')) fail(BACK, "L'adresse du site doit commencer par https://");
+    siteUrl = u.origin;
+  }
+
+  const data = {
+    price, tagline: t('tagline', 250), motto: t('motto', 150), email, whatsapp, ...links,
+    waveNumber: t('waveNumber', 30), orangeNumber: t('orangeNumber', 30), cashPlace: t('cashPlace', 150),
+    validityMode, validityMonths: Number.isFinite(validityMonths) ? validityMonths : 12,
+    cardPrefix, cardDigits, cardIncludeYear, siteUrl,
+  };
+
+  const { error } = await admin().from('app_settings').upsert({ id: 1, data, updated_at: new Date().toISOString(), updated_by: me.id });
+  if (error) fail(BACK, "Enregistrement impossible : la table des paramètres n'existe peut-être pas encore (exécutez le script settings.sql dans Supabase).");
+
+  await admin().from('audit_log').insert({ admin_id: me.id, action: 'update_settings', details: { price } });
+  revalidateTag('settings');
+  refresh();
+  redirect(`${BACK}?ok=1`);
 }
 
 /* ---------------- Révoquer / réactiver une carte ---------------- */
