@@ -27,7 +27,7 @@ export default function Aide() {
       </details>
       <details>
         <summary>J'ai perdu le lien de ma carte, que faire ?</summary>
-        <p>Conservez le lien dès que vous l'avez : ajoutez la page à vos favoris ou à l'écran d'accueil de votre téléphone, et téléchargez la carte en PNG ou en PDF. En cas de perte, contactez {contact}.</p>
+        <p>Conservez le lien dès que vous l'avez : ajoutez la page à vos favoris ou à l'écran d'accueil de votre téléphone, et téléchargez la carte en PNG ou en PDF. En cas de perte, faites une demande sur la page <Link href="/retrouver-ma-carte">Retrouver ma carte</Link> ou contactez {contact}.</p>
       </details>
       <details>
         <summary>Comment vérifier qu'une carte est valide ?</summary>
