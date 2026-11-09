@@ -1,9 +1,10 @@
 import Link from 'next/link';
-import { site } from '@/lib/site';
+import { getSite, validityLabel } from '@/lib/settings';
 
 export const metadata = { title: 'Aide – SMEC' };
 
-export default function Aide() {
+export default async function Aide() {
+  const site = await getSite();
   const contact = site.email ? <a href={`mailto:${site.email}`}>{site.email}</a> : "l'équipe SMEC";
   return (
     <div className="box info">
@@ -19,7 +20,7 @@ export default function Aide() {
       </details>
       <details>
         <summary>Combien coûte la carte et combien de temps est-elle valable ?</summary>
-        <p>La carte coûte {site.price.toLocaleString('fr-FR')} FCFA. Elle est valable jusqu'au 31 décembre de l'année où elle est émise.</p>
+        <p>La carte coûte {site.price.toLocaleString('fr-FR')} FCFA. Validité : {validityLabel(site)}.</p>
       </details>
       <details>
         <summary>J'ai payé, mais ma carte n'est pas active.</summary>
