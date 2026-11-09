@@ -255,6 +255,13 @@ export async function rejectPayment(formData) {
   refresh();
 }
 
+export async function markLinkSent(formData) {
+  const me = await requireAdmin();
+  const id = String(formData.get('member_id'));
+  await admin().from('audit_log').insert({ admin_id: me.id, action: 'card_link_sent', target_id: id });
+  refresh();
+}
+
 /* ---------------- Révoquer / réactiver une carte ---------------- */
 
 export async function changeCardStatus(formData) {
