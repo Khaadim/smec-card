@@ -3,7 +3,7 @@ import { getAdmin } from '@/lib/auth';
 import { paymentMode } from '@/lib/site';
 import Sidebar from './Sidebar';
 import Footer from '../Footer';
-
+<meta name="google-site-verification" content="SIhq2FS9Mvhkc9dFZzJVFTvPEbaMkSebuErWxJxqu1I" />
 export default async function AdminLayout({ children }) {
   const me = await getAdmin();
   if (!me) return children; // page de connexion : pas de barre latérale
