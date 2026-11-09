@@ -5,6 +5,8 @@ import { getAdmin } from '@/lib/auth';
 import { updateMember, deleteMember, changeCardStatus, confirmPayment } from '../../actions';
 import { METHOD_LABELS } from '@/lib/site';
 import ConfirmButton from '../../ConfirmButton';
+import CopyButton from '../../CopyButton';
+import { waNumber } from '@/lib/phone';
 
 export const dynamic = 'force-dynamic';
 const OK = { created: 'Membre créé et carte activée.', updated: 'Modifications enregistrées.' };
@@ -76,6 +78,10 @@ export default async function MembreDetail({ params, searchParams }) {
                     <a className="btnlink sm" href={`/carte/${card.token}/png`}>PNG</a>
                     <a className="btnlink sm" href={`/carte/${card.token}/pdf`}>PDF</a>
                   </>}
+                </div>
+                <div className="act" style={{ marginTop: 14 }}>
+                  <a className="btnlink sm" target="_blank" rel="noopener noreferrer" href={`https://wa.me/${waNumber(m.phone)}?text=${encodeURIComponent(`Bonjour ${m.first_name}, voici le lien de votre carte de membre SMEC : ${process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL}/carte/${card.token}`)}`}>Envoyer le lien par WhatsApp</a>
+                  <CopyButton label="Copier le lien" text={`${process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL}/carte/${card.token}`} />
                 </div>
                 <form action={changeCardStatus} className="act" style={{ marginTop: 14 }}>
                   <input type="hidden" name="card_id" value={card.id} />
