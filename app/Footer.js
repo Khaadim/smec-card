@@ -43,6 +43,7 @@ export default function Footer() {
           <h4>Navigation</h4>
           <Link href="/">Accueil</Link>
           <Link href="/inscription">Demander ma carte</Link>
+          <Link href="/retrouver-ma-carte">Retrouver ma carte</Link>
           <Link href="/aide">Aide et FAQ</Link>
         </div>
 
