@@ -1,13 +1,14 @@
 import QRCode from 'qrcode';
 import { admin, photoUrl, computeStatus, STATUS_LABELS } from '@/lib/supabase';
-import { site, METHOD_LABELS } from '@/lib/site';
+import { METHOD_LABELS } from '@/lib/site';
+import { getSite } from '@/lib/settings';
 import Brand from '../../Brand';
 
 export const dynamic = 'force-dynamic';
 
 const btn = { display: 'block', padding: '12px', borderRadius: 10, background: '#1d5fd1', color: '#fff', fontWeight: 700, textDecoration: 'none', textAlign: 'center' };
 
-function instructions(method) {
+function instructions(method, site) {
   const amount = `${site.price.toLocaleString('fr-FR')} FCFA`;
   if (method === 'wave') return site.waveNumber ? `Envoyez ${amount} par Wave au ${site.waveNumber}.` : `Envoyez ${amount} par Wave. L'équipe SMEC vous communiquera le numéro.`;
   if (method === 'orange_money') return site.orangeNumber ? `Envoyez ${amount} par Orange Money au ${site.orangeNumber}.` : `Envoyez ${amount} par Orange Money. L'équipe SMEC vous communiquera le numéro.`;
@@ -16,6 +17,7 @@ function instructions(method) {
 
 export default async function CardPage({ params }) {
   const { token } = await params;
+  const site = await getSite();
   const sb = admin();
   const { data: card } = await sb.from('cards').select('*, members(*)').eq('token', token).maybeSingle();
   if (!card) return <div className="box">Carte introuvable.</div>;
@@ -23,7 +25,7 @@ export default async function CardPage({ params }) {
   const m = card.members;
   const status = computeStatus(card);
   const photo = await photoUrl(sb, m.photo_path);
-  const siteUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  const siteUrl = site.siteUrl;
   const qr = await QRCode.toDataURL(`${siteUrl}/verifier/${token}`, { width: 360, margin: 1 });
 
   let pending = null;
@@ -46,7 +48,7 @@ export default async function CardPage({ params }) {
           <b>Paiement en attente de confirmation</b>
           <p>Montant : {pending.amount.toLocaleString('fr-FR')} FCFA · Mode : {METHOD_LABELS[pending.method] || pending.method}</p>
           <p>Référence : <b>{pending.id.slice(0, 6).toUpperCase()}</b> (à indiquer avec votre paiement)</p>
-          <p>{instructions(pending.method)}</p>
+          <p>{instructions(pending.method, site)}</p>
           <p>Votre carte sera activée dès que l'équipe SMEC aura confirmé le paiement. <b>Conservez cette page</b> (ajoutez-la à vos favoris) : actualisez-la ensuite pour voir votre carte.</p>
         </div>
       )}
