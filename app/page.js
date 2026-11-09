@@ -24,7 +24,7 @@ export default function Accueil() {
           <p className="motto">{site.motto}</p>
           <p className="lead">Simple · Rapide · Sécurisée. Obtenez votre carte SMEC en quelques minutes et gardez-la toujours avec vous.</p>
           <div className="hero-btns">
-            <Link className="cta" href="/inscription">Demander ma carte – {site.price.toLocaleString('fr-FR')} FCFA</Link>
+            <Link className="cta" href="/inscription">Demander ma carte</Link>
             <Link className="cta ghost" href="/aide">Comment ça marche ?</Link>
           </div>
         </div>
