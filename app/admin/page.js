@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import { admin, computeStatus, STATUS_LABELS } from '@/lib/supabase';
 import { getAdmin } from '@/lib/auth';
 import Icon from './icons';
+import CopyButton from './CopyButton';
+import { markLinkSent } from './actions';
+import { waNumber } from '@/lib/phone';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +21,22 @@ export default async function Dashboard() {
   const paid = (pays || []).filter((p) => p.status === 'paid');
   const pending = (pays || []).filter((p) => p.status === 'pending').length;
   const revenue = paid.reduce((s, p) => s + p.amount, 0);
+  // Demandes « retrouver ma carte » en attente de traitement
+  const since = new Date(Date.now() - 30 * 864e5).toISOString();
+  const { data: logs } = await sb.from('audit_log').select('action, target_id, created_at').in('action', ['card_link_request', 'card_link_sent']).gte('created_at', since).limit(300);
+  const lastReq = {}, lastSent = {};
+  for (const l of logs || []) {
+    const t = l.created_at, tgt = l.target_id, map = l.action === 'card_link_request' ? lastReq : lastSent;
+    if (!map[tgt] || t > map[tgt]) map[tgt] = t;
+  }
+  const pendingIds = Object.keys(lastReq).filter((id) => !lastSent[id] || lastSent[id] < lastReq[id]);
+  let linkRequests = [];
+  if (pendingIds.length) {
+    const { data: ms } = await sb.from('members').select('id, first_name, last_name, phone, cards(token)').in('id', pendingIds);
+    linkRequests = ms || [];
+  }
+  const siteUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+
   const rows = (cards || []).map((c) => ({ ...c, st: computeStatus(c) }));
   const count = (s) => rows.filter((r) => r.st === s).length;
   const expired = count('expired');
@@ -45,6 +64,36 @@ export default async function Dashboard() {
           </div>
         ))}
       </div>
+
+      {linkRequests.length > 0 && (
+        <div className="panel">
+          <h2>Demandes de lien de carte ({linkRequests.length})</h2>
+          <p className="sub">Ces membres ont perdu le lien de leur carte. Envoyez-le sur le numéro enregistré, puis marquez la demande comme traitée.</p>
+          <div className="tablewrap">
+            <table>
+              <thead><tr><th>Membre</th><th>Téléphone</th><th>Action</th></tr></thead>
+              <tbody>
+                {linkRequests.map((m) => {
+                  const link = `${siteUrl}/carte/${m.cards?.[0]?.token}`;
+                  return (
+                    <tr key={m.id}>
+                      <td><Link href={`/admin/membres/${m.id}`}>{m.first_name} {m.last_name}</Link></td>
+                      <td>{m.phone}</td>
+                      <td>
+                        <div className="act">
+                          <a className="btnlink sm" target="_blank" rel="noopener noreferrer" href={`https://wa.me/${waNumber(m.phone)}?text=${encodeURIComponent(`Bonjour ${m.first_name}, voici le lien de votre carte de membre SMEC : ${link}`)}`}>WhatsApp</a>
+                          <CopyButton label="Copier le lien" text={link} />
+                          <form action={markLinkSent}><input type="hidden" name="member_id" value={m.id} /><button>Marquer traité</button></form>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="panel">
         <h2>Répartition des cartes</h2>
