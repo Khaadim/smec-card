@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { site } from '@/lib/site';
+import { getSite } from '@/lib/settings';
 import Brand from './Brand';
 
 const I = {
@@ -13,7 +13,8 @@ const Ico = ({ n }) => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{I[n]}</svg>
 );
 
-export default function Footer() {
+export default async function Footer() {
+  const site = await getSite();
   const links = [
     ['instagram', 'Instagram', site.instagram],
     ['facebook', 'Facebook', site.facebook],
@@ -33,7 +34,7 @@ export default function Footer() {
           {links.length > 0 && (
             <div className="soc">
               {links.map(([n, label, url]) => (
-                <a key={n} href={url} target="_blank" rel="noopener noreferrer" aria-label={label} title={label}><Ico n={n} /></a>
+                <a key={n} href={url} {...(url.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noopener noreferrer' })} aria-label={label} title={label}><Ico n={n} /></a>
               ))}
             </div>
           )}
@@ -50,7 +51,6 @@ export default function Footer() {
         <div className="foot-col">
           <h4>Informations</h4>
           <Link href="/confidentialite">Confidentialité</Link>
-          <Link href="/admin">Espace administrateur</Link>
           {site.email && <a href={`mailto:${site.email}`}>{site.email}</a>}
           {site.whatsapp && <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>}
         </div>
