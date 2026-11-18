@@ -51,6 +51,7 @@ export default async function Footer() {
         <div className="foot-col">
           <h4>Informations</h4>
           <Link href="/confidentialite">Confidentialité</Link>
+          <Link href="/admin">Espace administrateur</Link>
           {site.email && <a href={`mailto:${site.email}`}>{site.email}</a>}
           {site.whatsapp && <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>}
         </div>
