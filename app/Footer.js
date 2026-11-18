@@ -29,7 +29,7 @@ export default async function Footer() {
       <div className="foot-in">
         <div className="foot-brand">
           <Brand size={60} />
-         // <p>{site.tagline}</p>
+        
           <p className="motto">{site.motto}</p>
           {links.length > 0 && (
             <div className="soc">
